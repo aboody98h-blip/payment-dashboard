@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Payment Dashboard</title>
+<link rel="manifest" href="manifest.json"/>
+<meta name="theme-color" content="#ffffff"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
+<meta name="apple-mobile-web-app-title" content="Payments"/>
+<style>
+:root{
+  --bg:#ffffff;--bg2:#f5f5f4;--bg3:#f0efee;
+  --text:#1a1a1a;--text2:#6b7280;--text3:#9ca3af;
+  --border:#e5e7eb;--border2:#d1d5db;
+  --green:#16a34a;--green-bg:#f0fdf4;
+  --red:#dc2626;--red-bg:#fef2f2;
+  --amber:#d97706;--amber-bg:#fffbeb;
+  --blue:#2563eb;--blue-bg:#eff6ff;
+  --radius:12px;--radius-sm:8px;
+}
+@media(prefers-color-scheme:dark){
+  :root{
+    --bg:#1c1c1e;--bg2:#2c2c2e;--bg3:#3a3a3c;
+    --text:#f2f2f7;--text2:#aeaeb2;--text3:#636366;
+    --border:#3a3a3c;--border2:#48484a;
+    --green:#34d399;--green-bg:#052e16;
+    --red:#f87171;--red-bg:#450a0a;
+    --amber:#fbbf24;--amber-bg:#451a03;
+    --blue:#60a5fa;--blue-bg:#172554;
+  }
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg3);color:var(--text);min-height:100vh;font-size:15px}
+
+/* Auth */
+#authScreen{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:24px;gap:20px;background:var(--bg)}
+.auth-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:32px 28px;max-width:380px;width:100%;text-align:center;box-shadow:0 4px 24px rgba(0,0,0,.08)}
+.auth-icon{font-size:48px;margin-bottom:16px}
+.auth-card h1{font-size:22px;font-weight:600;margin-bottom:8px}
+.auth-card p{font-size:14px;color:var(--text2);line-height:1.6;margin-bottom:24px}
+.google-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:12px 20px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg);cursor:pointer;font-size:15px;font-weight:500;color:var(--text);transition:background .15s}
+.google-btn:hover{background:var(--bg2)}
+.auth-note{font-size:12px;color:var(--text3);max-width:300px;text-align:center;line-height:1.5}
+
+/* App */
+#app{display:none;flex-direction:column;min-height:100vh}
+.topbar{background:var(--bg);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.topbar h1{font-size:17px;font-weight:600}
+.topbar-actions{display:flex;gap:8px;align-items:center}
+.icon-btn{background:none;border:1px solid var(--border2);border-radius:var(--radius-sm);padding:7px 12px;cursor:pointer;font-size:13px;color:var(--text2);display:flex;align-items:center;gap:6px;font-weight:500;transition:background .15s}
+.icon-btn:hover{background:var(--bg2)}
+.icon-btn:disabled{opacity:.5;cursor:not-allowed}
+.spin{animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.avatar{width:28px;height:28px;border-radius:50%;border:1px solid var(--border)}
+
+/* Content */
+.content{padding:16px;max-width:680px;margin:0 auto;width:100%;flex:1;padding-bottom:88px}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+@media(min-width:480px){.stats{grid-template-columns:repeat(4,1fr)}}
+.stat{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px 14px}
+.stat-label{font-size:11px;color:var(--text2);margin-bottom:5px;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.stat-val{font-size:20px;font-weight:700}
+.stat-sub{font-size:11px;color:var(--text2);margin-top:2px}
+.red{color:var(--red)}.green{color:var(--green)}.amber{color:var(--amber)}
+
+/* Progress */
+.prog-card{background:var(--bg);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px 16px;margin-bottom:14px}
+.prog-top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px;font-weight:500}
+.prog-top span:first-child{color:var(--text2)}
+.prog-track{background:var(--bg3);border-radius:20px;height:7px;overflow:hidden}
+.prog-fill{height:100%;border-radius:20px;background:var(--green);transition:width .4s}
+
+/* Section */
+.sec-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.sec-hdr h2{font-size:12px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em}
+.add-btn{display:flex;align-items:center;gap:4px;background:none;border:1px solid var(--border2);border-radius:var(--radius-sm);padding:5px 12px;cursor:pointer;font-size:12px;color:var(--text2);font-weight:500}
+.add-btn:hover{background:var(--bg2)}
+
+/* Filters */
+.filters{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{font-size:12px;padding:5px 12px;border-radius:20px;border:1px solid var(--border2);background:none;cursor:pointer;color:var(--text2);font-weight:500;white-space:nowrap}
+.chip.on{background:var(--text);color:var(--bg);border-color:transparent}
+
+/* Rows */
+.pay-list{display:flex;flex-direction:column;gap:6px}
+.divider{font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.06em;padding:10px 2px 4px;display:flex;align-items:center;gap:8px}
+.divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.pay-row{display:grid;grid-template-columns:10px 1fr auto;gap:10px;align-items:center;background:var(--bg);border:1px solid var(--border);border-radius:var(--radius);padding:12px 14px;cursor:pointer;transition:border-color .15s,transform .1s;-webkit-user-select:none;user-select:none}
+.pay-row:active{transform:scale(.99)}
+.pay-row.alert{border-color:var(--red);border-width:1.5px}
+.pay-row.warn{border-color:var(--amber);border-width:1.5px}
+.pay-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.pay-name{font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.pay-meta{font-size:12px;color:var(--text2);margin-top:2px}
+.gtag{font-size:10px;background:var(--blue-bg);color:var(--blue);padding:1px 5px;border-radius:4px;font-weight:600}
+.pay-right{text-align:right}
+.pay-amt{font-size:15px;font-weight:700;margin-bottom:4px}
+.badge{display:inline-block;font-size:10px;padding:3px 8px;border-radius:20px;font-weight:600}
+.b-paid{background:var(--green-bg);color:var(--green)}
+.b-unpaid{background:var(--amber-bg);color:var(--amber)}
+.b-late{background:var(--red-bg);color:var(--red)}
+.b-coming{background:var(--blue-bg);color:var(--blue)}
+.b-cancelled{background:var(--bg2);color:var(--text3)}
+
+/* FAB */
+.fab{position:fixed;bottom:24px;right:20px;width:54px;height:54px;border-radius:50%;background:var(--text);color:var(--bg);border:none;font-size:26px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 20px rgba(0,0,0,.25);z-index:99;transition:transform .15s}
+.fab:active{transform:scale(.95)}
+
+/* Modal */
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:200;align-items:flex-end;justify-content:center}
+@media(min-width:500px){.overlay{align-items:center;padding:16px}}
+.overlay.open{display:flex}
+.modal{background:var(--bg);border-radius:16px 16px 0 0;padding:20px 20px 32px;width:100%;max-width:420px}
+@media(min-width:500px){.modal{border-radius:var(--radius);padding:24px}}
+.drag-bar{width:36px;height:4px;background:var(--border2);border-radius:2px;margin:0 auto 18px}
+.modal h3{font-size:17px;font-weight:600;margin-bottom:18px}
+.field{margin-bottom:13px}
+.field label{font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:5px;text-transform:uppercase;letter-spacing:.04em}
+.field input,.field select{width:100%;padding:10px 12px;border:1px solid var(--border2);border-radius:var(--radius-sm);background:var(--bg);color:var(--text);font-size:15px;-webkit-appearance:none}
+.field input:focus,.field select:focus{outline:none;border-color:var(--text)}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.modal-btns{display:flex;gap:10px;margin-top:20px}
+.modal-btns button{flex:1;padding:13px;border-radius:var(--radius-sm);font-size:15px;font-weight:600;cursor:pointer;border:none}
+.btn-sec{background:var(--bg2);color:var(--text2)}
+.btn-pri{background:var(--text);color:var(--bg)}
+
+/* Toast */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--text);color:var(--bg);padding:10px 20px;border-radius:20px;font-size:14px;font-weight:500;opacity:0;transition:opacity .25s,transform .25s;pointer-events:none;z-index:999;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* Empty */
+.empty{text-align:center;padding:40px 20px;color:var(--text2);font-size:14px}
+
+/* Sync bar */
+.sync-bar{font-size:11px;color:var(--text3);text-align:center;padding:10px 0 0}
+</style>
+</head>
+<body>
+
+<div id="authScreen">
+  <div class="auth-card">
+    <div class="auth-icon">💳</div>
+    <h1>Payment Dashboard</h1>
+    <p>Connect Gmail to automatically track all your bills, subscriptions, and payments.</p>
+    <button class="google-btn" onclick="signIn()">
+      <svg width="20" height="20" viewBox="0 0 48 48">
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+      </svg>
+      Sign in with Google
+    </button>
+  </div>
+  <p class="auth-note">Only reads payment emails. Data stored on your device only.</p>
+</div>
+
+<div id="app">
+  <div class="topbar">
+    <h1>💳 <span id="monthLabel"></span></h1>
+    <div class="topbar-actions">
+      <img id="avatar" class="avatar" style="display:none" alt=""/>
+      <button class="icon-btn" id="syncBtn" onclick="syncGmail()">
+        <svg id="syncIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
+          <path d="M3 3v5h5"/>
+          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
+          <path d="M16 21h5v-5"/>
+        </svg>
+        Sync
+      </button>
+      <button class="icon-btn" onclick="signOut()">Sign out</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="stats">
+      <div class="stat"><div class="stat-label">Monthly</div><div class="stat-val" id="sTotal">¥0</div><div class="stat-sub" id="sTotalSub">— bills</div></div>
+      <div class="stat"><div class="stat-label">Unpaid</div><div class="stat-val red" id="sUnpaid">¥0</div><div class="stat-sub" id="sUnpaidSub">— pending</div></div>
+      <div class="stat"><div class="stat-label">Paid</div><div class="stat-val green" id="sPaid">¥0</div><div class="stat-sub" id="sPaidSub">— done</div></div>
+      <div class="stat"><div class="stat-label">Due soon</div><div class="stat-val amber" id="sDue">¥0</div><div class="stat-sub">next 7 days</div></div>
+    </div>
+
+    <div class="prog-card">
+      <div class="prog-top"><span>Paid this month</span><span id="progPct">0%</span></div>
+      <div class="prog-track"><div class="prog-fill" id="progFill" style="width:0%"></div></div>
+    </div>
+
+    <div class="sec-hdr">
+      <h2>Payments</h2>
+      <button class="add-btn" onclick="openAdd()">＋ Add manual</button>
+    </div>
+    <div class="filters" id="filterRow"></div>
+    <div class="pay-list" id="payList"></div>
+    <div class="sync-bar" id="syncBar"></div>
+  </div>
+
+  <button class="fab" onclick="openAdd()">＋</button>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="drag-bar"></div>
+    <h3 id="modalTitle">Add payment</h3>
+    <div class="field-row">
+      <div class="field"><label>Name</label><input id="fName" placeholder="e.g. Netflix"/></div>
+      <div class="field"><label>Amount (¥)</label><input id="fAmt" type="number" placeholder="0"/></div>
+    </div>
+    <div class="field-row">
+      <div class="field"><label>Category</label>
+        <select id="fCat">
+          <option value="credit">Credit card</option>
+          <option value="mobile">Mobile / Net</option>
+          <option value="subscription">Subscription</option>
+          <option value="gym">Gym</option>
+          <option value="rent">Rent / Utility</option>
+          <option value="loan">Loan</option>
+          <option value="onetime">One-time</option>
+        </select>
+      </div>
+      <div class="field"><label>Due date</label><input id="fDate" type="date"/></div>
+    </div>
+    <div class="field"><label>Status</label>
+      <select id="fStatus">
+        <option value="unpaid">Unpaid</option>
+        <option value="paid">Paid</option>
+        <option value="coming">Upcoming</option>
+        <option value="cancelled">Cancelled</option>
+      </select>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-sec" onclick="closeModal()">Cancel</button>
+      <button class="btn-pri" onclick="saveEntry()">Save</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── Only the Google Client ID goes here — NO Anthropic key ──
+const GOOGLE_CLIENT_ID = '794943283535-t7m8lm79qituc3insj1378si2rog4k1p.apps.googleusercontent.com'; // ← replace this
+
+const CATS = {
+  credit:       {label:'Credit card',  color:'#D85A30'},
+  mobile:       {label:'Mobile / Net', color:'#7C3AED'},
+  subscription: {label:'Subscription', color:'#0891B2'},
+  gym:          {label:'Gym',          color:'#DB2777'},
+  rent:         {label:'Rent/Utility', color:'#D97706'},
+  loan:         {label:'Loan',         color:'#2563EB'},
+  onetime:      {label:'One-time',     color:'#6B7280'},
+};
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const TODAY = new Date(); TODAY.setHours(0,0,0,0);
+const CY = TODAY.getFullYear(), CM = TODAY.getMonth();
+
+let token = null, payments = [], filter = 'all', editId = null, nid = 1;
+
+// Storage
+const SK = () => `pmts_${CY}_${CM}`;
+function load(){ try{ const r=localStorage.getItem(SK()); if(r){payments=JSON.parse(r);nid=Math.max(0,...payments.map(p=>p.id))+1;}}catch(e){}}
+function save(){ try{localStorage.setItem(SK(),JSON.stringify(payments));}catch(e){}}
+
+// Auth
+async function signIn(){
+  await new Promise(res=>{
+    if(window.google){res();return;}
+    const s=document.createElement('script');
+    s.src='https://accounts.google.com/gsi/client';
+    s.onload=res; document.head.appendChild(s);
+  });
+  google.accounts.oauth2.initTokenClient({
+    client_id: GOOGLE_CLIENT_ID,
+    scope: 'https://www.googleapis.com/auth/gmail.readonly profile email',
+    callback: async r => {
+      if(!r.access_token) return;
+      token = r.access_token;
+      localStorage.setItem('gt', token);
+      await getProfile();
+      showApp();
+      syncGmail();
+    }
+  }).requestAccessToken();
+}
+
+async function getProfile(){
+  try{
+    const r = await fetch('https://www.googleapis.com/oauth2/v2/userinfo',{headers:{Authorization:`Bearer ${token}`}});
+    const p = await r.json();
+    if(p.picture){ const a=document.getElementById('avatar'); a.src=p.picture; a.style.display='block'; }
+  }catch(e){}
+}
+
+function signOut(){
+  localStorage.removeItem('gt'); token=null;
+  document.getElementById('app').style.display='none';
+  document.getElementById('authScreen').style.display='flex';
+  toast('Signed out');
+}
+
+function showApp(){
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('app').style.display='flex';
+  document.getElementById('monthLabel').textContent=`${MONTHS[CM]} ${CY}`;
+  load(); render();
+}
+
+// Gmail fetch
+async function gmailFetch(url){
+  const r = await fetch(url,{headers:{Authorization:`Bearer ${token}`}});
+  return r.json();
+}
+
+async function syncGmail(){
+  const btn=document.getElementById('syncBtn');
+  const icon=document.getElementById('syncIcon');
+  btn.disabled=true; icon.classList.add('spin');
+  try{
+    // Search payment emails from last 60 days
+    const q = encodeURIComponent('(subject:(請求 OR お支払い OR 明細 OR 料金 OR invoice OR receipt OR bill OR subscription) OR from:(rakuten-card.co.jp OR mobile.rakuten.co.jp OR portalmail.kddi.com OR anytimefitness.jp OR googleplay-noreply@google.com OR spotify.com OR noreply.inforichjapan.com)) newer_than:60d');
+    const list = await gmailFetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${q}&maxResults=25`);
+    const ids = [...new Set((list.messages||[]).map(m=>m.id))].slice(0,20);
+
+    const details = await Promise.all(ids.map(id =>
+      gmailFetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=Subject&metadataHeaders=Date&metadataHeaders=From`)
+    ));
+
+    const summaries = details.map(m=>{
+      const h = m.payload?.headers||[];
+      const get = n => h.find(x=>x.name===n)?.value||'';
+      return `Date: ${get('Date')}\nFrom: ${get('From')}\nSubject: ${get('Subject')}\nSnippet: ${m.snippet||''}`;
+    }).join('\n---\n');
+
+    if(!summaries.trim()){ toast('No emails found'); return; }
+
+    const nowStr = TODAY.toISOString().slice(0,10);
+    const curMonthStr = `${CY}-${String(CM+1).padStart(2,'0')}`;
+
+    // Call our secure proxy instead of Anthropic directly
+    const aiResp = await fetch('/api/chat',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1500,
+        system:`You parse Japanese/English payment emails and return ONLY a JSON array. No markdown, no explanation.
+Each item: {"name":string,"amount":number,"due":"YYYY-MM-DD","cat":"credit|mobile|subscription|gym|rent|loan|onetime","status":"paid|unpaid|coming|cancelled","fromGmail":true}
+Rules:
+- Extract exact yen amounts only. Skip emails with no amount.
+- 楽天カード Visa/Mastercard = credit. Use payment date as due date.
+- 楽天モバイル = mobile. Estimate ¥3278 if unclear.
+- KDDI = mobile. Use exact amount.
+- Anytime Fitness = gym. If reply confirms payment → paid.
+- Google Play/YouTube = subscription.
+- Spotify/ChargeSpot = subscription.
+- Payment confirmed → paid. Cancelled subscription → cancelled. Future date → coming. Past unpaid → unpaid.
+- Today: ${nowStr}. Focus on current month: ${curMonthStr}.
+- Skip ads/marketing (SUUMO, etc). One entry per service per month.`,
+        messages:[{role:'user',content:`Today: ${nowStr}\nMonth: ${curMonthStr}\n\nEmails:\n${summaries}\n\nReturn JSON array.`}]
+      })
+    });
+
+    const aiData = await aiResp.json();
+    const raw = aiData.content?.filter(b=>b.type==='text').map(b=>b.text).join('')||'';
+    let parsed=[];
+    try{ parsed=JSON.parse(raw.replace(/```json|```/g,'').trim()); }
+    catch(e){ toast('Parse error'); console.error(raw); return; }
+
+    let added=0, updated=0;
+    parsed.forEach(p=>{
+      if(!p.name||!p.amount||!p.due) return;
+      const d=new Date(p.due+'T00:00:00');
+      if(d.getMonth()!==CM||d.getFullYear()!==CY) return;
+      const ex=payments.find(x=>x.fromGmail&&x.name===p.name);
+      if(ex){ if(!ex.manual){ex.status=p.status;ex.amount=p.amount;ex.due=p.due;} updated++; }
+      else{ payments.push({...p,id:nid++}); added++; }
+    });
+    save(); render();
+    const t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    document.getElementById('syncBar').textContent=`Last synced ${t} — ${added} added, ${updated} updated`;
+    toast(`✓ ${added} added, ${updated} updated`);
+  }catch(e){
+    console.error(e);
+    toast('Sync failed — check console');
+  }
+  btn.disabled=false; icon.classList.remove('spin');
+}
+
+// Status
+function status(p){
+  if(p.status==='paid') return 'paid';
+  if(p.status==='cancelled') return 'cancelled';
+  const due=new Date(p.due+'T00:00:00');
+  if(due<TODAY) return 'late';
+  if((due-TODAY)/86400000<=7) return 'due';
+  return p.status==='coming'?'coming':'unpaid';
+}
+
+// Render
+const fmt = n => '¥'+Math.round(n).toLocaleString();
+
+function render(){
+  const mp=payments.filter(p=>{ const d=new Date(p.due+'T00:00:00'); return d.getMonth()===CM&&d.getFullYear()===CY; });
+  const shown=filter==='all'?mp:mp.filter(p=>p.cat===filter);
+
+  let total=0,paid=0,unpaid=0,dueAmt=0,paidN=0,unpaidN=0,dueN=0;
+  mp.forEach(p=>{
+    const s=status(p); if(s==='cancelled') return;
+    total+=p.amount;
+    if(s==='paid'){paid+=p.amount;paidN++;}
+    else{unpaid+=p.amount;unpaidN++; if(s==='due'||s==='late'){dueAmt+=p.amount;dueN++;}}
+  });
+
+  document.getElementById('sTotal').textContent=fmt(total);
+  document.getElementById('sTotalSub').textContent=mp.filter(p=>status(p)!=='cancelled').length+' bills';
+  document.getElementById('sUnpaid').textContent=fmt(unpaid);
+  document.getElementById('sUnpaidSub').textContent=unpaidN+' pending';
+  document.getElementById('sPaid').textContent=fmt(paid);
+  document.getElementById('sPaidSub').textContent=paidN+' done';
+  document.getElementById('sDue').textContent=fmt(dueAmt);
+
+  const pct=total>0?Math.round(paid/total*100):0;
+  document.getElementById('progFill').style.width=pct+'%';
+  document.getElementById('progPct').textContent=pct+'%';
+
+  document.getElementById('filterRow').innerHTML=['all',...Object.keys(CATS)].map(c=>{
+    const n=c==='all'?mp.length:mp.filter(p=>p.cat===c).length;
+    if(n===0&&c!=='all') return '';
+    return `<button class="chip${filter===c?' on':''}" onclick="setFilter('${c}')">${c==='all'?'All':CATS[c].label} ${n}</button>`;
+  }).join('');
+
+  const ord={late:0,due:1,unpaid:2,coming:3,paid:4,cancelled:5};
+  const sorted=[...shown].sort((a,b)=>(ord[status(a)]??5)-(ord[status(b)]??5)||new Date(a.due)-new Date(b.due));
+
+  if(!sorted.length){
+    document.getElementById('payList').innerHTML='<div class="empty">No payments this month<br><small style="opacity:.6">Tap Sync or ＋ to add</small></div>';
+    return;
+  }
+
+  const si={paid:{c:'b-paid',l:'Paid'},unpaid:{c:'b-unpaid',l:'Unpaid'},late:{c:'b-late',l:'Overdue'},due:{c:'b-unpaid',l:'Due soon'},coming:{c:'b-coming',l:'Upcoming'},cancelled:{c:'b-cancelled',l:'Cancelled'}};
+
+  const rowOf=p=>{
+    const s=status(p),cat=CATS[p.cat]||CATS.onetime;
+    const dStr=new Date(p.due+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+    return `<div class="pay-row${s==='late'?' alert':s==='due'?' warn':''}" onclick="toggle(${p.id})">
+      <div class="pay-dot" style="background:${cat.color}"></div>
+      <div>
+        <div class="pay-name">${p.name}${p.fromGmail?'<span class="gtag">Gmail</span>':''}</div>
+        <div class="pay-meta">${cat.label} · Due ${dStr}</div>
+      </div>
+      <div class="pay-right">
+        <div class="pay-amt">${fmt(p.amount)}</div>
+        <span class="badge ${si[s].c}">${si[s].l}</span>
+      </div>
+    </div>`;
+  };
+
+  const g={action:sorted.filter(p=>['late','due','unpaid'].includes(status(p))),coming:sorted.filter(p=>status(p)==='coming'),paid:sorted.filter(p=>status(p)==='paid'),cancelled:sorted.filter(p=>status(p)==='cancelled')};
+  let html='';
+  if(g.action.length) html+=`<div class="divider">⚠ Action needed</div>`+g.action.map(rowOf).join('');
+  if(g.coming.length) html+=`<div class="divider">Upcoming</div>`+g.coming.map(rowOf).join('');
+  if(g.paid.length)   html+=`<div class="divider">Paid</div>`+g.paid.map(rowOf).join('');
+  if(g.cancelled.length) html+=`<div class="divider">Cancelled</div>`+g.cancelled.map(rowOf).join('');
+  document.getElementById('payList').innerHTML=html;
+}
+
+function toggle(id){
+  const p=payments.find(x=>x.id===id); if(!p) return;
+  p.status=p.status==='paid'?'unpaid':'paid'; p.manual=true;
+  save(); render(); toast(p.status==='paid'?'Marked as paid ✓':'Marked as unpaid');
+}
+function setFilter(c){filter=c;render();}
+
+function openAdd(){
+  editId=null;
+  document.getElementById('modalTitle').textContent='Add payment';
+  document.getElementById('fName').value='';
+  document.getElementById('fAmt').value='';
+  document.getElementById('fCat').value='credit';
+  document.getElementById('fDate').value=TODAY.toISOString().slice(0,10);
+  document.getElementById('fStatus').value='unpaid';
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal(){document.getElementById('overlay').classList.remove('open');}
+function saveEntry(){
+  const name=document.getElementById('fName').value.trim();
+  const amt=parseFloat(document.getElementById('fAmt').value);
+  if(!name||isNaN(amt)) return;
+  payments.push({id:nid++,name,amount:amt,cat:document.getElementById('fCat').value,due:document.getElementById('fDate').value,status:document.getElementById('fStatus').value,fromGmail:false,manual:true});
+  save(); closeModal(); render(); toast('Payment added');
+}
+
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2200);
+}
+
+document.getElementById('overlay').addEventListener('click',e=>{if(e.target===document.getElementById('overlay'))closeModal();});
+
+// Init
+(()=>{
+  const t=localStorage.getItem('gt');
+  if(t){token=t;load();showApp();getProfile();}
+})();
+</script>
+</body>
+</html>
