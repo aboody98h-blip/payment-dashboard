@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0045)file:///C:/Users/abood/Downloads/index_5.html -->
+<!-- saved from url=(0045)file:///C:/Users/abood/Downloads/index_6.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -244,7 +244,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <script>
 // ── Only the Google Client ID goes here — NO Anthropic key ──
-const GOOGLE_CLIENT_ID = '794943283535-t7m8lm79qituc3insj1378si2rog4k1p.apps.googleusercontent.com'; // ← replace this
+const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID'; // ← replace this
 
 const CATS = {
   credit:       {label:'Credit card',  color:'#D85A30'},
@@ -317,18 +317,32 @@ function showApp(){
 // Gmail fetch
 async function gmailFetch(url){
   const r = await fetch(url,{headers:{Authorization:`Bearer ${token}`}});
+  if(!r.ok){ throw new Error(`Gmail error ${r.status}: ${await r.text()}`); }
   return r.json();
 }
+
+function setSyncStatus(msg){ document.getElementById('syncBar').textContent = msg; }
 
 async function syncGmail(){
   const btn=document.getElementById('syncBtn');
   const icon=document.getElementById('syncIcon');
   btn.disabled=true; icon.classList.add('spin');
+  setSyncStatus('Syncing...');
   try{
-    // Search payment emails from last 60 days
+    // Step 1: fetch Gmail
+    setSyncStatus('Reading Gmail...');
     const q = encodeURIComponent('(subject:(請求 OR お支払い OR 明細 OR 料金 OR invoice OR receipt OR bill OR subscription) OR from:(rakuten-card.co.jp OR mobile.rakuten.co.jp OR portalmail.kddi.com OR anytimefitness.jp OR googleplay-noreply@google.com OR spotify.com OR noreply.inforichjapan.com)) newer_than:60d');
     const list = await gmailFetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${q}&maxResults=25`);
-    const ids = [...new Set((list.messages||[]).map(m=>m.id))].slice(0,20);
+
+    if(!list.messages || list.messages.length === 0){
+      setSyncStatus('No payment emails found in last 60 days');
+      toast('No payment emails found');
+      btn.disabled=false; icon.classList.remove('spin');
+      return;
+    }
+
+    const ids = [...new Set(list.messages.map(m=>m.id))].slice(0,20);
+    setSyncStatus(`Found ${ids.length} emails — fetching details...`);
 
     const details = await Promise.all(ids.map(id =>
       gmailFetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages/${id}?format=metadata&metadataHeaders=Subject&metadataHeaders=Date&metadataHeaders=From`)
@@ -340,12 +354,11 @@ async function syncGmail(){
       return `Date: ${get('Date')}\nFrom: ${get('From')}\nSubject: ${get('Subject')}\nSnippet: ${m.snippet||''}`;
     }).join('\n---\n');
 
-    if(!summaries.trim()){ toast('No emails found'); return; }
-
+    // Step 2: call AI proxy
+    setSyncStatus('Analysing emails with AI...');
     const nowStr = TODAY.toISOString().slice(0,10);
     const curMonthStr = `${CY}-${String(CM+1).padStart(2,'0')}`;
 
-    // Call our secure proxy instead of Anthropic directly
     const aiResp = await fetch('/api/chat',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -357,24 +370,34 @@ Each item: {"name":string,"amount":number,"due":"YYYY-MM-DD","cat":"credit|mobil
 Rules:
 - Extract exact yen amounts only. Skip emails with no amount.
 - 楽天カード Visa/Mastercard = credit. Use payment date as due date.
-- 楽天モバイル = mobile. Estimate ¥3278 if unclear.
+- 楽天モバイル = mobile. Estimate 3278 if unclear.
 - KDDI = mobile. Use exact amount.
-- Anytime Fitness = gym. If reply confirms payment → paid.
+- Anytime Fitness = gym. If reply confirms payment, mark paid.
 - Google Play/YouTube = subscription.
 - Spotify/ChargeSpot = subscription.
-- Payment confirmed → paid. Cancelled subscription → cancelled. Future date → coming. Past unpaid → unpaid.
+- Payment confirmed = paid. Cancelled subscription = cancelled. Future date = coming. Past unpaid = unpaid.
 - Today: ${nowStr}. Focus on current month: ${curMonthStr}.
-- Skip ads/marketing (SUUMO, etc). One entry per service per month.`,
-        messages:[{role:'user',content:`Today: ${nowStr}\nMonth: ${curMonthStr}\n\nEmails:\n${summaries}\n\nReturn JSON array.`}]
+- Skip ads/marketing emails. One entry per service per month.`,
+        messages:[{role:'user',content:`Today: ${nowStr}\nMonth: ${curMonthStr}\n\nEmails:\n${summaries}\n\nReturn JSON array only.`}]
       })
     });
 
+    if(!aiResp.ok){
+      const errText = await aiResp.text();
+      throw new Error(`AI proxy error ${aiResp.status}: ${errText}`);
+    }
+
     const aiData = await aiResp.json();
+    if(aiData.error){ throw new Error(`AI error: ${JSON.stringify(aiData.error)}`); }
+
     const raw = aiData.content?.filter(b=>b.type==='text').map(b=>b.text).join('')||'';
+    if(!raw){ throw new Error('Empty response from AI'); }
+
     let parsed=[];
     try{ parsed=JSON.parse(raw.replace(/```json|```/g,'').trim()); }
-    catch(e){ toast('Parse error'); console.error(raw); return; }
+    catch(e){ throw new Error(`JSON parse failed: ${raw.slice(0,200)}`); }
 
+    // Step 3: merge
     let added=0, updated=0;
     parsed.forEach(p=>{
       if(!p.name||!p.amount||!p.due) return;
@@ -386,11 +409,12 @@ Rules:
     });
     save(); render();
     const t=new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-    document.getElementById('syncBar').textContent=`Last synced ${t} — ${added} added, ${updated} updated`;
+    setSyncStatus(`Last synced ${t} — ${added} added, ${updated} updated`);
     toast(`✓ ${added} added, ${updated} updated`);
   }catch(e){
-    console.error(e);
-    toast('Sync failed — check console');
+    console.error('Sync error:', e);
+    setSyncStatus(`Error: ${e.message}`);
+    toast('Sync failed — see status below');
   }
   btn.disabled=false; icon.classList.remove('spin');
 }
