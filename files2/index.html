@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0045)file:///C:/Users/abood/Downloads/index_6.html -->
+<!-- saved from url=(0045)file:///C:/Users/abood/Downloads/index_7.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -331,17 +331,38 @@ async function syncGmail(){
   try{
     // Step 1: fetch Gmail
     setSyncStatus('Reading Gmail...');
-    const q = encodeURIComponent('(subject:(請求 OR お支払い OR 明細 OR 料金 OR invoice OR receipt OR bill OR subscription) OR from:(rakuten-card.co.jp OR mobile.rakuten.co.jp OR portalmail.kddi.com OR anytimefitness.jp OR googleplay-noreply@google.com OR spotify.com OR noreply.inforichjapan.com)) newer_than:60d');
-    const list = await gmailFetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${q}&maxResults=25`);
+    // Run multiple broad searches and merge results
+    setSyncStatus('Searching Gmail...');
+    const searches = [
+      'from:rakuten-card.co.jp newer_than:90d',
+      'from:mobile.rakuten.co.jp newer_than:90d',
+      'from:portalmail.kddi.com newer_than:90d',
+      'from:anytimefitness newer_than:90d',
+      'from:google.com subject:receipt newer_than:90d',
+      'subject:請求 newer_than:90d',
+      'subject:お支払い newer_than:90d',
+      'subject:明細 newer_than:90d',
+      'subject:料金 newer_than:90d',
+      'subject:invoice newer_than:90d',
+      'subject:receipt newer_than:90d',
+    ];
 
-    if(!list.messages || list.messages.length === 0){
-      setSyncStatus('No payment emails found in last 60 days');
+    const allIds = new Set();
+    for(const sq of searches){
+      try{
+        const r = await gmailFetch(`https://gmail.googleapis.com/gmail/v1/users/me/messages?q=${encodeURIComponent(sq)}&maxResults=10`);
+        (r.messages||[]).forEach(m => allIds.add(m.id));
+      }catch(e){ console.warn('Search failed:', sq, e); }
+    }
+
+    if(allIds.size === 0){
+      setSyncStatus('No payment emails found — try adding payments manually');
       toast('No payment emails found');
       btn.disabled=false; icon.classList.remove('spin');
       return;
     }
 
-    const ids = [...new Set(list.messages.map(m=>m.id))].slice(0,20);
+    const ids = [...allIds].slice(0,25);
     setSyncStatus(`Found ${ids.length} emails — fetching details...`);
 
     const details = await Promise.all(ids.map(id =>
