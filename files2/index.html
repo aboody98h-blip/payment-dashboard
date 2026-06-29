@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<!-- saved from url=(0045)file:///C:/Users/abood/Downloads/index_5.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Payment Dashboard</title>
-<link rel="manifest" href="manifest.json"/>
-<meta name="theme-color" content="#ffffff"/>
-<meta name="apple-mobile-web-app-capable" content="yes"/>
-<meta name="apple-mobile-web-app-status-bar-style" content="default"/>
-<meta name="apple-mobile-web-app-title" content="Payments"/>
+<link rel="manifest" href="file:///C:/Users/abood/Downloads/manifest.json">
+<meta name="theme-color" content="#ffffff">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Payments">
 <style>
 :root{
   --bg:#ffffff;--bg2:#f5f5f4;--bg3:#f0efee;
@@ -149,10 +149,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <p>Connect Gmail to automatically track all your bills, subscriptions, and payments.</p>
     <button class="google-btn" onclick="signIn()">
       <svg width="20" height="20" viewBox="0 0 48 48">
-        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+        <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+        <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+        <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+        <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.35-8.16 2.35-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
       </svg>
       Sign in with Google
     </button>
@@ -164,13 +164,13 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
   <div class="topbar">
     <h1>💳 <span id="monthLabel"></span></h1>
     <div class="topbar-actions">
-      <img id="avatar" class="avatar" style="display:none" alt=""/>
+      <img id="avatar" class="avatar" style="display:none" alt="">
       <button class="icon-btn" id="syncBtn" onclick="syncGmail()">
         <svg id="syncIcon" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/>
-          <path d="M3 3v5h5"/>
-          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"/>
-          <path d="M16 21h5v-5"/>
+          <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+          <path d="M3 3v5h5"></path>
+          <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path>
+          <path d="M16 21h5v-5"></path>
         </svg>
         Sync
       </button>
@@ -208,8 +208,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
     <div class="drag-bar"></div>
     <h3 id="modalTitle">Add payment</h3>
     <div class="field-row">
-      <div class="field"><label>Name</label><input id="fName" placeholder="e.g. Netflix"/></div>
-      <div class="field"><label>Amount (¥)</label><input id="fAmt" type="number" placeholder="0"/></div>
+      <div class="field"><label>Name</label><input id="fName" placeholder="e.g. Netflix"></div>
+      <div class="field"><label>Amount (¥)</label><input id="fAmt" type="number" placeholder="0"></div>
     </div>
     <div class="field-row">
       <div class="field"><label>Category</label>
@@ -223,7 +223,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
           <option value="onetime">One-time</option>
         </select>
       </div>
-      <div class="field"><label>Due date</label><input id="fDate" type="date"/></div>
+      <div class="field"><label>Due date</label><input id="fDate" type="date"></div>
     </div>
     <div class="field"><label>Status</label>
       <select id="fStatus">
@@ -244,7 +244,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 
 <script>
 // ── Only the Google Client ID goes here — NO Anthropic key ──
-const GOOGLE_CLIENT_ID = '794943283535-t7m8lm79qituc3insj1378si2rog4k1p.apps.googleusercontent.com';// ← replace this
+const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID'; // ← replace this
 
 const CATS = {
   credit:       {label:'Credit card',  color:'#D85A30'},
@@ -266,26 +266,30 @@ const SK = () => `pmts_${CY}_${CM}`;
 function load(){ try{ const r=localStorage.getItem(SK()); if(r){payments=JSON.parse(r);nid=Math.max(0,...payments.map(p=>p.id))+1;}}catch(e){}}
 function save(){ try{localStorage.setItem(SK(),JSON.stringify(payments));}catch(e){}}
 
-// Auth
-async function signIn(){
-  await new Promise(res=>{
-    if(window.google){res();return;}
-    const s=document.createElement('script');
-    s.src='https://accounts.google.com/gsi/client';
-    s.onload=res; document.head.appendChild(s);
-  });
-  google.accounts.oauth2.initTokenClient({
+// Auth — redirect flow (no popup needed)
+function signIn(){
+  const params = new URLSearchParams({
     client_id: GOOGLE_CLIENT_ID,
+    redirect_uri: window.location.origin + window.location.pathname,
+    response_type: 'token',
     scope: 'https://www.googleapis.com/auth/gmail.readonly profile email',
-    callback: async r => {
-      if(!r.access_token) return;
-      token = r.access_token;
-      localStorage.setItem('gt', token);
-      await getProfile();
-      showApp();
-      syncGmail();
-    }
-  }).requestAccessToken();
+    include_granted_scopes: 'true',
+  });
+  window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
+}
+
+// Handle redirect back from Google (token in URL hash)
+function handleRedirect(){
+  const hash = window.location.hash.substring(1);
+  if(!hash) return false;
+  const params = new URLSearchParams(hash);
+  const t = params.get('access_token');
+  if(!t) return false;
+  token = t;
+  localStorage.setItem('gt', token);
+  // Clean up URL
+  history.replaceState(null, '', window.location.pathname);
+  return true;
 }
 
 async function getProfile(){
@@ -504,10 +508,18 @@ function toast(msg){
 document.getElementById('overlay').addEventListener('click',e=>{if(e.target===document.getElementById('overlay'))closeModal();});
 
 // Init
-(()=>{
+(async ()=>{
+  if(handleRedirect()){
+    load();
+    await getProfile();
+    showApp();
+    syncGmail();
+    return;
+  }
   const t=localStorage.getItem('gt');
   if(t){token=t;load();showApp();getProfile();}
 })();
 </script>
-</body>
-</html>
+
+
+</body></html>
